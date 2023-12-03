@@ -367,7 +367,7 @@ int	lenvar(char *str)
 	int	i;
 
 	i = 0;
-	while (str[i] && str[i] != '\"' && str[i] != '$' && str[i] != ' ' && str[i] != '\n')
+	while (str[i] && str[i] != '\"' && str[i] != '$' && str[i] != ' ' && str[i] != '\n' && ft_isalpha(str[i]))
 	{
 		i++;
 	}
@@ -412,6 +412,7 @@ int	getlenexpandedvar(char *str, char **envp)
 			// free(tmp);
 			i = ft_strlen(envp[i]) - lenvar(tmp) - 1;
 			free(tmp);
+			// printf("len: %d\n", i);
 			return (i);
 		}
 	}
@@ -437,17 +438,20 @@ int getlenexpandedvars(char *str, char **envp)
 			i++;
 			x += lenvar(&str[i]) + 1;
 			len += getlenexpandedvar(&str[i], envp);
-			while (str[i] != ' ' && str[i] != '$' && str[i])
+			printf("lenvar: %d, x: %d, %d , %s\n", len, x, ft_strlen(str), &str[i]);
+
+			while (str[i] != ' ' && str[i] != '$' && str[i] && !ft_isalpha(str[i]))
 				i++;
 			continue ;
 		}
 		i++;
 	}
+	printf("%d\n", ft_strlen(str) - x + len);
 	return (ft_strlen(str) - x + len);
 }
 
 // 			"argument something $PATH PATH $PATH"   / 35
-//			expanded its 							/ 35 + 134 * 2 - 2 * 5
+//			expanded its 							/ 35 + 134 * 2 - 2 *  eelisaroeelisaro $USER$user$1eugen$USER
 
 // char	*getexpandedvar(char *envp, )
 // {
@@ -493,11 +497,11 @@ void	expandvars(s_string *node, char **envp)
 					j++;
 				while (envp[getindexenvp(&node->value[i], envp)][++j])
 				{
-					 tmp[t++] = envp[getindexenvp(&node->value[i], envp)][j];
+					tmp[t++] = envp[getindexenvp(&node->value[i], envp)][j];
 					// printf("%d, %c\n", j, envp[getindexenvp(&node->value[i], envp)][j]);
 				}
 			}
-			while (node->value[i] != ' ' && node->value[i] != '$' && node->value[i])
+			while (node->value[i] && node->value[i] != ' ' && node->value[i] != '$')
 				i++;
 			if (!node->value[i])
 				break ;
@@ -542,7 +546,7 @@ s_string	*createlist(char **split)
 	return (stack);
 }
 
-// PATH=/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin
+// PATH=/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin |'eelisaro grep' eelisaroeelisaro
 
 void	printtype(int type)
 {
@@ -560,7 +564,7 @@ int main(int argc, char **argv, char **envp)
 {
     // if (argc != 2)
     //     return 0;
-	char *s = "echo export cdd \'$USER\' $ my name is grep>><<><>0  Makefile  \"|\'$USER grep\' $USER$USER $$\"| \'grep x@ $PATH\' >| file $USE";
+	char *s = "echo export cdd \'$USER\' $ my name is grep>><<><>0  Makefile  \"|\'$USER grep\' $USER$USER $$\"| \'grep x@ $PATH\' >| file $USE | $USER$user$1eugen$USER";
 	// char *s = "$$$";
 	// char *s = "<";
 	// if(!checkquotes(s))
@@ -611,3 +615,5 @@ int main(int argc, char **argv, char **envp)
 // ◦ exit with no options
 // what is the exit status?
 // extra type for buildins?
+
+// $USER$user$1eugen$USER-
