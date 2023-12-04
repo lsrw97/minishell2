@@ -28,7 +28,7 @@ all:	minishell
 # 	${CC} -c $< -o $@ ''
 
 minishell: ${NAME} ${PRINTF}
-	gcc ${NAME} ${PRINTF} ${CFLAGS} -o minishell
+	gcc ${NAME} ${PRINTF} ${CFLAGS} -o minishell -lreadline
 
 
 $(NAME):	$(OBJS) $(PRINTF)

@@ -17,10 +17,10 @@ typedef enum s_token
 
 typedef struct s_string
 {
-    void	*next;
-    void	*prev;
-    int		nodeType;
-	char	*value;
+    struct s_string	*next;
+    struct s_string	*prev;
+    int		        nodeType;
+	char	        *value;
 }	s_string;
 
 typedef struct s_treeNode

@@ -299,44 +299,44 @@ char	*strappendpath(char *str, char *value)
 	return (string);
 }
 
-int	checkforcommand(char *value, char **envp)
+char	*checkforcommand(char *value, char **envp)
 {
 	char	**paths;
+	char	*tmp;
 	// char	*str;
 
 	int i = -1;
 	if (!value[0])
-		return 0;
+		return (NULL);
 	if (!ft_strncmp(value, "export", ft_strlen(value) + 1) || !ft_strncmp(value, "unset", ft_strlen(value) + 1) || !ft_strncmp(value, "env", ft_strlen(value) + 1) || !ft_strncmp(value, "exit", ft_strlen(value) + 1) || !ft_strncmp(value, "cd", ft_strlen("cd") + 1))
-		return (1);
+		return (value);
 	if (access(value, X_OK) == 0)
-	{
-		// freesplit(paths);
-		return (1);
-	}
-	paths = ft_split(envp[checkforenv(envp, "PATH")], ':');
+		return (value);
+	if (!getenv("PATH"))
+		return (NULL);
+	paths = ft_split(getenv("PATH"), ':');
 	// str = ft_strjoin(paths[i], "/");
 	// str = ft_strjoin(paths[i], value);
 	while (paths[++i])
 		paths[i] = strappendpath(paths[i], value);
-	i = -1;
-	paths[0] = paths[0] + 5;
+	// i = -1;
 	// while (paths[++i])
 	// 	printf("%s\n", paths[i]);
-
+	i = -1;
 	while (paths[++i])
 	{
 		if (access(paths[i], X_OK) == 0)
 		{
-			paths[0] = paths[0] - 5;
-			printf("%s\n", paths[i]);
+			// printf("%s\n", paths[i]);
+			tmp = malloc(ft_strlen(paths[i]) + 1);
+			ft_strlcpy(tmp, paths[i], ft_strlen(paths[i]) + 1);
+			// printf("tmp: %s\n", paths[i]);
 			freesplit(paths);
-			return (1);
+			return (tmp);
 		}
 	}
-	paths[0] = paths[0] - 5;
 	freesplit(paths);
-	return 0;
+	return (NULL);
 }
 
 void	setnodetype(s_string *node, char **envp)
@@ -585,66 +585,156 @@ void	printtype(int type)
 		printf("[ARGUMENT]	");
 }
 
-int main(int argc, char **argv, char **envp)
+char	**cmdwithargs(s_string *list)
 {
-    // if (argc != 2)
-    //     return 0;
-	char *s = "echo export cd \'$USER\' $ my name is grep>><<><>0  Makefile  \"|\'$USER grep\' $USER$USER $$\"| \'grep x@ $PATH\' >| file $USE | $USER$user$1eugen$USER$--";
-	// char *s = "$1hello world";
-	// char *s = "<";
-	// if(!checkquotes(s))
-	// 	return 0; 
-	s_string *list;
-	list = NULL;
-	int i = -1;
-	char **ss = minisplit(s);
-	// while (ss[++i])
-	// 	printf("%s \n", ss[i]);
-	i = -1;
-	// while (envp[++i])
-	// 	printf("%s\n", envp[i]);
-	// printf("%d, len: %d\n", checkforenv(envp, "PATH"), envlength(envp[3]));home42eugenhome42$
-	printf("%s", s);
-	printf("\n\n");
-	list = createlist(ss);
-	// printf("%s\n", list->value);
-	while (list)
+	s_string	*tmp;
+	char		**str;
+	int			i;
+	int			j;
+
+	tmp = list;
+	i = 0;
+	j = 0;
+	while (list && list->nodeType != PIPE)
 	{
-		if (list->value[ft_strlen(list->value) - 1] != '\"')
-			expandvars(list, envp);
-		setnodetype(list, envp);
-		// printf("%d is file ", checkforcommand(list->value, envp));
-		printtype(list->nodeType);
-		printf("%s\n", list->value);
+		i++;
 		list = list->next;
 	}
-
-	// printf("%d length\n", getlenexpandedvars("$PATH", envp));
-	// int id;
-    // while (1)
-    // {
-    // 	char *input = readline("Enter a command: ");
-	// 	ss = minisplit(input);
-	// 	list = createlist(ss);
-	// 	while (list)
-	// 	{
-	// 		if (list->value[ft_strlen(list->value) - 1] != '\"')
-	// 			expandvars(list, envp);
-	// 		setnodetype(list, envp);
-	// 		// printf("%d is file ", checkforcommand(list->value, envp));
-	// 		printtype(list->nodeType);
-	// 		printf("%s\n", list->value);
-	// 		list = list->next;
-	// 	}
-    //     if (!input) 
-    //         // If the user entered EOF (Ctrl+D), exit the loop
-    //         break ;
-    //     free(input);
-    //     rl_on_new_line();
-    // }
-	freesplit(ss);
-	// printf("%d\n", checkforargument("cat", envp));
+	// printf("i: %d\n", i);
+	str = malloc(sizeof(char *) * (i + 1));
+	while (i-- > 0)
+	{
+		str[j++] = tmp->value;
+		tmp = tmp->next;
+	}
+	str[j] = NULL;
+	// printf("%s, %s, %d\n", str[0], str[1], j);
+	return (str);
 }
+
+// char	*getcmdpath(char *value)
+// {
+// 	char	**paths;
+// 	int		i;
+
+// 	i = -1;
+// 	paths = ft_split(getenv("PATH"), ':');
+
+// 	// str = ft_strjoin(paths[i], "/");
+// 	// str = ft_strjoin(paths[i], value);
+// 	while (paths[++i])
+// 		paths[i] = strappendpath(paths[i], value);
+// 	return 
+// }
+
+int main(int argc, char **argv, char **envp)
+{
+	s_string	*list;
+	s_string	*tmp;
+	char		**ss;
+	int			id;
+	int			i;
+
+	list = NULL;
+	i = -1;
+
+    while (1)
+    {
+    	char *input = readline("minishell >$ ");
+		ss = minisplit(input);
+		list = createlist(ss);
+		tmp = list;
+		while (list)
+		{
+			if (list->value[ft_strlen(list->value) - 1] != '\"')
+				expandvars(list, envp);
+			setnodetype(list, envp);
+			// printtype(list->nodeType);
+			// printf("%s\n", list->value);
+			// char **str = {"echo", "hello", "world", NULL};
+			// execve("/bin/echo", str, envp);
+			list = list->next;
+		}
+		id = fork();
+		if (id != 0)
+			wait(0);
+		else
+			execve(checkforcommand(tmp->value, envp), cmdwithargs(tmp), envp);
+        if (!input) 
+            break ;
+        free(input);
+        rl_on_new_line();
+    }
+	freesplit(ss);
+}
+
+
+// int main(int argc, char **argv, char **envp)
+// {
+//     // if (argc != 2)
+//     //     return 0;
+// 	char *s = "echo export cd \'$USER\' $ my name is grep>><<><>0  Makefile  \"|\'$USER grep\' $USER$USER $$\"| \'grep x@ $PATH\' >| file $USE | $USER$user$1eugen$USER$1USER--$-";
+// 	// char *s = "$1hello world";
+// 	// char *s = "<";
+// 	// if(!checkquotes(s))
+// 	// 	return 0; 
+// 	s_string *list;
+// 	list = NULL;
+// 	int i = -1;
+// 	char **ss;
+// 	// ss = minisplit(s);
+// 	// while (ss[++i])
+// 	// 	printf("%s \n", ss[i]);
+// 	i = -1;
+// 	// while (envp[++i])
+// 	// 	printf("%s\n", envp[i]);
+// 	// printf("%d, len: %d\n", checkforenv(envp, "PATH"), envlength(envp[3]));home42eugenhome42$
+// 	// printf("%s", s);
+// 	// printf("\n\n");
+// 	// list = createlist(ss);
+// 	// // printf("%s\n", list->value);
+// 	// while (list)
+// 	// {
+// 	// 	if (list->value[ft_strlen(list->value) - 1] != '\"')
+// 	// 		expandvars(list, envp);
+// 	// 	setnodetype(list, envp);
+// 	// 	// printf("%d is file ", checkforcommand(list->value, envp));
+// 	// 	printtype(list->nodeType);
+// 	// 	printf("%s\n", list->value);
+// 	// 	list = list->next;
+// 	// }
+// 	// printf("%s\n", getenv("PATH"));
+
+// 	// printf("%d length\n", getlenexpandedvars("$PATH", envp));
+
+
+// 	int id;
+//     while (1)
+//     {
+//     	char *input = readline("minishell >$ ");
+// 		ss = minisplit(input);
+// 		list = createlist(ss);
+// 		// while (list)
+// 		// {
+// 			if (list->value[ft_strlen(list->value) - 1] != '\"')
+// 				expandvars(list, envp);
+// 			setnodetype(list, envp);
+// 			// printf("%d is file ", checkforcommand(list->value, envp));
+// 			printtype(list->nodeType);
+// 			printf("%s\n", list->value);
+// 			char **str = cmdwithargs(list);
+// 			execve("/bin/echo", str, envp);
+// 			list = list->next;
+// 		// }
+//         if (!input) 
+//             // If the user entered EOF (Ctrl+D), exit the loop
+//             break ;
+//         free(input);
+//         rl_on_new_line();
+//     }
+// 	freesplit(ss);
+// 	// printf("%d\n", checkforargument("cat", envp));
+// }
 
 // ok wir haben alle elemente mit expanded vars in einer liste
 // jetzt müssen wir denen noch Tokens geben. 
