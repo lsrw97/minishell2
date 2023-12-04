@@ -16,7 +16,7 @@ AR		= ar rcs
 
 RM		= rm -rf
 
-CFLAGS	= # -fsanitize=address -g #-Werror -Wextra -Wall
+CFLAGS	=  -fsanitize=address -g #-Werror -Wextra -Wall
 
 NAMELFT		= libft.a
 

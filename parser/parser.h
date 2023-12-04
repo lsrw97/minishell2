@@ -2,6 +2,9 @@
 #define MODULE_H
 
 #include <stdlib.h>
+#include <readline/history.h>
+#include <unistd.h>
+#include <sys/wait.h>
 #include "../ft_printf/libft/libft.h"
 
 typedef enum s_token

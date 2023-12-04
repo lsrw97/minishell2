@@ -307,7 +307,7 @@ int	checkforcommand(char *value, char **envp)
 	int i = -1;
 	if (!value[0])
 		return 0;
-	if (!ft_strncmp(value, "export", ft_strlen(value)) || !ft_strncmp(value, "unset", ft_strlen(value)) || !ft_strncmp(value, "env", ft_strlen(value)) || !ft_strncmp(value, "exit", ft_strlen(value)) || !ft_strncmp(value, "cd", ft_strlen("cd")))
+	if (!ft_strncmp(value, "export", ft_strlen(value) + 1) || !ft_strncmp(value, "unset", ft_strlen(value) + 1) || !ft_strncmp(value, "env", ft_strlen(value) + 1) || !ft_strncmp(value, "exit", ft_strlen(value) + 1) || !ft_strncmp(value, "cd", ft_strlen("cd") + 1))
 		return (1);
 	if (access(value, X_OK) == 0)
 	{
@@ -436,22 +436,31 @@ int getlenexpandedvars(char *str, char **envp)
 		if (str[i] == '$')
 		{
 			i++;
+			if (!str[i])
+				break ;
+			if (!ft_isalpha(str[i]))
+			{
+				++i;
+				x += 2;
+				continue ;
+			}
+			// if (getlenexpandedvar(&str[i], envp))
+			// printf("lenvar: %d, x: %d, %d , %s\n", len, x, ft_strlen(str), &str[i]);
 			x += lenvar(&str[i]) + 1;
 			len += getlenexpandedvar(&str[i], envp);
-			printf("lenvar: %d, x: %d, %d , %s\n", len, x, ft_strlen(str), &str[i]);
-
-			while (str[i] != ' ' && str[i] != '$' && str[i] && !ft_isalpha(str[i]))
+			while (str[i] && str[i] != ' ' && str[i] != '$')
 				i++;
 			continue ;
 		}
 		i++;
 	}
-	printf("%d\n", ft_strlen(str) - x + len);
+	// printf("lenvar: %d, x: %d, %d , %s\n", len, x, ft_strlen(str), &str[i]);
+	// printf("%d\n", ft_strlen(str) - x + len);
 	return (ft_strlen(str) - x + len);
 }
 
 // 			"argument something $PATH PATH $PATH"   / 35
-//			expanded its 							/ 35 + 134 * 2 - 2 *  eelisaroeelisaro $USER$user$1eugen$USER
+//			expanded its 							/ 35 + 134 * 2 - 2 * $!something$ home42eugenhome42-
 
 // char	*getexpandedvar(char *envp, )
 // {
@@ -474,31 +483,46 @@ void	expandvars(s_string *node, char **envp)
 	if (!node->value[0])
 		return ;
 	
-	tmp = malloc(getlenexpandedvars(node->value, envp) + 2);
+	tmp = malloc(getlenexpandedvars(node->value, envp) + 1);
 	// printf("len path: %d\n", getlenexpandedvars(node->value, envp) + 1);
 	while (node->value[++i] && node->value[i] != '\"')
 	{
 		j = -1;
 		if (node->value[i] == '$')
 		{
-			if (node->value[i + 1] == '$' )
-			{
-				i++;
-				continue ;
-			}
-			else if (node->value[i + 1] == ' ' || node->value[i + 1] == '\0')
+			// if (node->value[i + 1] == '$')
+			// {
+			// 	i++;
+			// 	continue ;
+			// }
+			if (node->value[i + 1] == ' ' || node->value[i + 1] == '\0')
 			{
 				tmp[t++] = node->value[i];
 				continue ;
 			}
-			if (getlenexpandedvar(&node->value[++i], envp) && getindexenvp(&node->value[i], envp) >= 0)
+			if (!ft_isalpha(node->value[i + 1]))
+			{
+				i++;
+				continue ;
+			}
+			// else if (!ft_isalpha(node->value[i + 1]))
+			// {
+			// 	while (node->value[i + 1] && node->value[i] != ' ' && node->value[i] != '$')
+			// 	{
+			// 		tmp[t++] = node->value[i];
+			// 		i++;
+			// 	}
+			// 	if (!node->value[i])
+			// 		break ;
+			// }
+			else if (getlenexpandedvar(&node->value[++i], envp) && getindexenvp(&node->value[i], envp) >= 0)
 			{
 				while (envp[getindexenvp(&node->value[i], envp)][j] != '=')
 					j++;
 				while (envp[getindexenvp(&node->value[i], envp)][++j])
 				{
 					tmp[t++] = envp[getindexenvp(&node->value[i], envp)][j];
-					// printf("%d, %c\n", j, envp[getindexenvp(&node->value[i], envp)][j]);
+					// printf("%d, %c\n", j, envp[getindexenvp(&node->value[i], envp)][ j]);
 				}
 			}
 			while (node->value[i] && node->value[i] != ' ' && node->value[i] != '$')
@@ -515,7 +539,7 @@ void	expandvars(s_string *node, char **envp)
 		t++;		
 	}
 	tmp[t] = node->value[i];
-	tmp[++t] = '\0';
+	// tmp[++t] = '\0';
 	// printf("tmp: %s\n", tmp);
 	node->value = malloc(ft_strlen(tmp) + 1);
 	ft_strlcpy(node->value, tmp, ft_strlen(tmp) + 1);
@@ -553,6 +577,7 @@ void	printtype(int type)
 	if (!type)
 		printf("[COMMAND]	");
 	else if (type == 1)
+	
 		printf("[REDIRECTION]	");
 	else if (type == 2)
 		printf("[PIPE]		");
@@ -564,8 +589,8 @@ int main(int argc, char **argv, char **envp)
 {
     // if (argc != 2)
     //     return 0;
-	char *s = "echo export cdd \'$USER\' $ my name is grep>><<><>0  Makefile  \"|\'$USER grep\' $USER$USER $$\"| \'grep x@ $PATH\' >| file $USE | $USER$user$1eugen$USER";
-	// char *s = "$$$";
+	char *s = "echo export cd \'$USER\' $ my name is grep>><<><>0  Makefile  \"|\'$USER grep\' $USER$USER $$\"| \'grep x@ $PATH\' >| file $USE | $USER$user$1eugen$USER$--";
+	// char *s = "$1hello world";
 	// char *s = "<";
 	// if(!checkquotes(s))
 	// 	return 0; 
@@ -578,7 +603,7 @@ int main(int argc, char **argv, char **envp)
 	i = -1;
 	// while (envp[++i])
 	// 	printf("%s\n", envp[i]);
-	// printf("%d, len: %d\n", checkforenv(envp, "PATH"), envlength(envp[3]));
+	// printf("%d, len: %d\n", checkforenv(envp, "PATH"), envlength(envp[3]));home42eugenhome42$
 	printf("%s", s);
 	printf("\n\n");
 	list = createlist(ss);
@@ -595,7 +620,28 @@ int main(int argc, char **argv, char **envp)
 	}
 
 	// printf("%d length\n", getlenexpandedvars("$PATH", envp));
-
+	// int id;
+    // while (1)
+    // {
+    // 	char *input = readline("Enter a command: ");
+	// 	ss = minisplit(input);
+	// 	list = createlist(ss);
+	// 	while (list)
+	// 	{
+	// 		if (list->value[ft_strlen(list->value) - 1] != '\"')
+	// 			expandvars(list, envp);
+	// 		setnodetype(list, envp);
+	// 		// printf("%d is file ", checkforcommand(list->value, envp));
+	// 		printtype(list->nodeType);
+	// 		printf("%s\n", list->value);
+	// 		list = list->next;
+	// 	}
+    //     if (!input) 
+    //         // If the user entered EOF (Ctrl+D), exit the loop
+    //         break ;
+    //     free(input);
+    //     rl_on_new_line();
+    // }
 	freesplit(ss);
 	// printf("%d\n", checkforargument("cat", envp));
 }
@@ -617,3 +663,5 @@ int main(int argc, char **argv, char **envp)
 // extra type for buildins?
 
 // $USER$user$1eugen$USER-
+
+// $USER$user$1eugen$USER$ home42home42

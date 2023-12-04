@@ -1,0 +1,106 @@
+readline					how do you implement it ? 
+							gcc prompt.c -o prompt -lreadline
+
+rl_clear_history
+
+rl_on_new_line				rl_on_new_line() is a function used to indicate to Readline that a new line has been started. This function informs Readline that the prompt has been updated and Readline should perform any necessary internal processing or reset its state for a new input line.
+
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+
+int main() {
+    char* input;
+
+    while (1) {
+        // Get user input using Readline
+        input = readline("Enter a command: ");
+
+        if (!input) {
+            // If the user entered EOF (Ctrl+D), exit the loop
+            break;
+        }
+
+        // Do something with the input...
+        printf("You entered: %s\n", input);
+
+        // Free the input obtained by Readline
+        free(input);
+
+        // Notify Readline that a new line is starting
+        rl_on_new_line();
+    }
+
+    return 0;
+}
+
+
+rl_replace_line				how to implement this? usefull for heredoc "heredoc >"
+rl_redisplay
+add_history					adds line to history
+printf
+malloc
+free
+write
+access						
+open
+read
+close
+fork
+wait
+waitpid
+wait3
+wait4
+signal,
+sigaction
+sigemptyset
+sigaddset
+kill
+exit,
+getcwd					get current working directory
+chdir					change the directory
+stat					The stat() function in C is used to get information about a file pointed to by a given filename.
+
+int main() {
+    const char *filename = "example.txt"; // Replace with the file path
+
+    struct stat file_info;
+
+    if (stat(filename, &file_info) == 0) {
+        printf("Information about %s:\n", filename);
+        printf("Size: %lld bytes\n", (long long)file_info.st_size);
+        printf("Mode: %o\n", file_info.st_mode);
+        // Add more fields as needed to retrieve file information
+    } else {
+        perror("stat() error");
+        return 1;
+    }
+
+    return 0;
+}
+
+lstat				similar to stat but works with symbolic links
+fstat				works on an open file descriptor rather than a filename or path.
+unlink				The unlink() function in C is used to delete a file by removing its directory entry.
+execve
+dup					redirecting output, duplicates filedescriptor
+dup2				redirecting output, 
+pipe
+opendir
+readdir				reads the dir and goes to next file
+closedir
+strerror
+perror
+isatty
+ttyname
+ttyslot
+ioctl
+getenv
+tcsetattr
+tcgetattr
+tgetent
+tgetflag
+tgetnum
+tgetstr
+tgoto
+tputs
