@@ -2,6 +2,8 @@
 #include "parser.h"
 #include <unistd.h>
 
+int	exit;
+
 int	checkquotes(char *str)
 {
 	int sq;
@@ -626,6 +628,11 @@ char	**cmdwithargs(s_string *list)
 // 		paths[i] = strappendpath(paths[i], value);
 // 	return 
 // }
+
+void	redirection()
+{
+
+}
 
 int main(int argc, char **argv, char **envp)
 {
